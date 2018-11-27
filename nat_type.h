@@ -73,6 +73,7 @@ typedef struct
     } addr;
 } StunAtrAddress;
 
+char* encode8(char* buf, size_t data);
 char* encode16(char* buf, uint16_t data);
 char* encode32(char* buf, uint32_t data);
 char* encode(char* buf, const char* data, unsigned int length);
@@ -83,6 +84,7 @@ extern int verbose;
             printf(format, ##__VA_ARGS__);  \
 } while(0)
 
-nat_type detect_nat_type(const char* stun_host, uint16_t stun_port, const char* local_host, uint16_t local_port, char* ext_ip, uint16_t* ext_port);
+nat_type detect_nat_type(char* stun_host, uint16_t stun_port, const char* local_host, uint16_t local_port, char* ext_ip, uint16_t* ext_port);
 
 const char* get_nat_desc(nat_type type);
+void gen_random_string(char *s, const int len);
