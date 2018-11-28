@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "nat_traversal.h"
+#include "utils.h"
 
 #define MAX_PORT 65535
 #define MIN_PORT 1025
@@ -26,7 +27,7 @@ static int ports[MAX_PORT - MIN_PORT];
 static int send_to_punch_server(client *c) {
   verbose_log("sending %ld bytes of data to punch server\n",
               c->msg_buf - c->buf);
-  hexDump(NULL, c->buf, c->msg_buf - c->buf);
+  hex_dump(NULL, c->buf, c->msg_buf - c->buf);
   int n = send(c->sfd, c->buf, c->msg_buf - c->buf, 0);
   c->msg_buf = c->buf;
   if (n == -1) {
@@ -68,7 +69,7 @@ int recv_peer_info(int fd, struct peer_info *peer) {
   verbose_log(
       "Dumping %d bytes of data received, should have dumped %ld bytes\n",
       n_bytes, sizeof(struct my_peer_info));
-  hexDump(NULL, &peer_i, n_bytes);
+  hex_dump(NULL, &peer_i, n_bytes);
   peer->id = ntohl(peer_i.id);
   verbose_log("The ip got is %s\n", peer_i.ip);
   strcpy(peer->ip, peer_i.ip);
@@ -77,7 +78,7 @@ int recv_peer_info(int fd, struct peer_info *peer) {
   verbose_log("Peer info got, id: %d, ip: %s, port: %d, type: %s, len: %d\n",
               peer->id, peer->ip, peer->port, get_nat_desc(peer->type),
               peer_i.len);
-  peer->meta = malloc(peer_i.len + 1);
+  peer->meta = malloc(peer_i.len);
   int m_bytes = recv(fd, (void *)peer->meta, peer_i.len, 0);
   if (m_bytes <= 0) {
     verbose_log("failed to get meta, error: %s\n", strerror(errno));
@@ -85,7 +86,7 @@ int recv_peer_info(int fd, struct peer_info *peer) {
   }
   verbose_log("meta is %s\n", peer->meta);
   n_bytes += m_bytes;
-  hexDump(NULL, peer, n_bytes);
+  hex_dump(NULL, peer, n_bytes);
   return n_bytes;
 }
 
@@ -335,51 +336,6 @@ static void *server_notify_handler(void *data) {
 
   try_connect_to_peer(peer);
   return NULL;
-}
-
-void hexDump(char *desc, void *addr, int len) {
-  int i;
-  unsigned char buff[17];
-  unsigned char *pc = (unsigned char *)addr;
-
-  // Output description if given.
-  if (desc != NULL)
-    verbose_log("%s:\n", desc);
-
-  // Process every byte in the data.
-  for (i = 0; i < len; i++) {
-    // Multiple of 16 means new line (with line offset).
-
-    if ((i % 16) == 0) {
-      // Just don't print ASCII for the zeroth line.
-      if (i != 0)
-        verbose_log("  %s\n", buff);
-
-      // Output the offset.
-      verbose_log("  %04x ", i);
-    }
-
-    // Now the hex code for the specific character.
-    verbose_log(" %02x", pc[i]);
-
-    // And store a printable ASCII character for later.
-    if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
-      buff[i % 16] = '.';
-    } else {
-      buff[i % 16] = pc[i];
-    }
-
-    buff[(i % 16) + 1] = '\0';
-  }
-
-  // Pad out last line if not exactly 16 characters.
-  while ((i % 16) != 0) {
-    verbose_log("   ");
-    i++;
-  }
-
-  // And print the final ASCII bit.
-  verbose_log("  %s\n", buff);
 }
 
 int init(struct sockaddr_in punch_server, client *c) {

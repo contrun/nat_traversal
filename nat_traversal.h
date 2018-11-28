@@ -53,5 +53,5 @@ int get_peer_info(client *cli, uint32_t peer_id, struct peer_info *peer);
 int get_peer_info_from_meta(client *cli, char *peer_meta,
                             struct peer_info *peer);
 int init(struct sockaddr_in punch_server, client *c);
-void hexDump(char *desc, void *addr, int len);
+void hex_dump(char *desc, void *addr, int len);
 int send_get_peer_info_request(client *cli, struct peer_info *peer);

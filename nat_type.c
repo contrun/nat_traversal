@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "nat_type.h"
+#include "utils.h"
 
 #define MAX_RETRIES_NUM 3
 

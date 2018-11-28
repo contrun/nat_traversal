@@ -3,3 +3,6 @@
 .DS_Store
 *.swp
 .ccls-cache/
+nat_traversal
+punch_server
+stun_host_test
